@@ -1,0 +1,32 @@
+# List of dictionaries containing team information
+team_info = [
+    {
+        "name": "Agboola Odunayo Racheal",
+        "Slack username": "Odunayo Racheal",
+        "Email": "Odunayoracheal04@gmail.com",
+        "Discipline": "Cell Biology and Genetics",
+        "Preferred programming language": "Python",
+        "Country": "Nigeria",
+        "Hobby": "Reading and listening to music"
+    },
+    {
+        "name": "Amarachi Akwekeoji",
+        "Slack username": "Amaravhi",
+        "Email": "I.verachivideoa@gmail.com",
+        "Discipline": "Cell Biology and Genetics",
+        "Preferred programming language": "Python",
+        "Country": "Nigeria",
+        "Hobby": "Watching movies, reading, and listening to music"
+    },
+    {
+        "name": "Amos Seleem",
+        "Slack username": "Venus Power",
+        "Email": "seleemamos@gmail.com",
+        "Discipline": "Cell Biology and Genetics",
+        "Preferred programming language": "Python",
+        "Country": "Nigeria",
+        "Hobby": "Learning new things"
+    }
+]
+
+print(team_info)
