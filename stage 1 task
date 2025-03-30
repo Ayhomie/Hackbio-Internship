@@ -1,0 +1,84 @@
+# Function 1: DNA to Protein Translation
+def dna_to_protein(sequence):
+    """Translate a DNA sequence into a protein sequence using a codon table."""
+    codon_to_aminoacid = {
+        "GCA": "Glycine", "GCC": "Glycine", "GCG": "Glycine", "GCU": "Glycine",
+        "AGA": "Aspartic acid", "AGG": "Aspartic acid", "CGA": "Aspartic acid", "CGC": "Aspartic acid",
+        "AAC": "Leucine", "AAT": "Leucine",
+        "GAC": "Serine", "GAT": "Serine",
+        "TGC": "Histidine", "TGT": "Histidine",
+        "CAA": "Valine", "CAG": "Valine",
+        "GAA": "Threonine", "GAG": "Threonine",
+        "GGA": "Arginine", "GGC": "Arginine", "GGG": "Arginine", "GGT": "Arginine",
+        "ATA": "Phenylalanine", "ATC": "Phenylalanine", "ATT": "Phenylalanine",
+        "CTA": "Isoleucine", "CTC": "Isoleucine", "CTG": "Isoleucine", "CTT": "Isoleucine",
+        "AAA": "Glutamine", "AAG": "Glutamine",
+        "ATG": "START",
+        "TTC": "Methionine", "TTT": "Methionine",
+        "CCA": "Tyrosine", "CCC": "Tyrosine", "CCG": "Tyrosine", "CCT": "Tyrosine",
+        "AGC": "Cysteine", "AGT": "Cysteine", "TCA": "Cysteine", "TCC": "Cysteine", "TCG": "Cysteine", "TCT": "Cysteine",
+        "ACA": "Alanine", "ACC": "Alanine", "ACG": "Alanine", "ACT": "Alanine",
+        "TGG": "STOP", "TAC": "STOP", "TAT": "STOP",
+        "GTA": "STOP", "GTC": "STOP", "GTG": "STOP", "GTT": "STOP",
+    }
+    
+    protein_sequence = []
+    for i in range(0, len(sequence), 3):
+        codon = sequence[i:i+3]
+        if codon in codon_to_aminoacid:
+            protein_sequence.append(codon_to_aminoacid[codon])
+    
+    return protein_sequence
+
+# Example usage
+dna_sequence = "ATGCGTACGTACGTACGTACG"
+print(dna_to_protein(dna_sequence))
+
+
+# Function 2: Simulating Population Growth
+import math
+
+def simulate_population_growth(initial_population, growth_rate, generations):
+    """Simulate exponential population growth over generations."""
+    population = initial_population
+    for generation in range(generations):
+        hour = generation + 1
+        population = initial_population * math.exp(growth_rate * hour)  # Using e^x
+        print(f"Generation {generation + 1}: Population = {population:.2f} | Hour {hour}")
+    
+    return population  # Return final population
+
+# Example usage
+simulate_population_growth(100, 1.05, 100)
+
+
+# Function 3: Time to Reach 80% of Carrying Capacity
+def time_to_reach_80_percent_carrying_capacity(initial_population, growth_rate, carrying_capacity, max_generations):
+    """Find the time required for population to reach 80% of carrying capacity."""
+    target_population = 0.8 * carrying_capacity
+    population = initial_population
+    
+    for generation in range(max_generations):
+        population = population * growth_rate
+        if population >= target_population:
+            return generation + 1  # Return generation when threshold is reached
+    
+    return None  # If target isn't reached within max_generations
+
+# Example usage
+hours_to_reach_80_percent = time_to_reach_80_percent_carrying_capacity(100, 1.05, 1000, 200)
+print(f"Hours to reach 80% carrying capacity: {hours_to_reach_80_percent}")
+
+
+# Function 4: Hamming Distance Calculation
+def hamming_distance(str1, str2):
+    """Calculate the Hamming distance between two strings."""
+    distance = 0
+    for i in range(len(str1)):
+        if str1[i] != str2[i]:
+            distance += 1
+    return distance
+
+# Example usage
+distance = hamming_distance("OdunRacheal", "BioInformatics")
+print(f"Hamming distance: {distance}")
