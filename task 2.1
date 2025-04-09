@@ -1,0 +1,85 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+from scipy.stats import ttest_ind
+
+# Import dataset from the web
+data_source = "https://raw.githubusercontent.com/HackBio-Internship/2025_project_collection/refs/heads/main/Python/Dataset/mcgc.tsv"
+df = pd.read_csv(data_source, sep='\t')  # Imports the data and assigns it to df
+
+# Convert wide format to long format
+long_df = df.melt(id_vars=['time'], var_name='Strain', value_name='OD600')
+
+# Function to classify strain as knock-in (+) or knock-out (-)
+def get_type(strain):
+    number = int(strain[1:])
+    if number <= 6:
+        return '+'  # Knock-in
+    else:
+        return '-'  # Knock-out
+
+# Add Type column
+long_df['Type'] = long_df['Strain'].apply(get_type)
+
+# Function to find time to 80% of max OD600
+def time_to_80_percent(od_values, time_values):
+    max_val = max(od_values)
+    threshold = 0.8 * max_val
+    for t, val in zip(time_values, od_values):
+        if val >= threshold:
+            return t
+    return None
+
+# Store results here
+results = []
+
+# Plot growth curves and calculate time to 80%
+for strain in long_df['Strain'].unique():
+    strain_data = long_df[long_df['Strain'] == strain]
+    time = strain_data['time']
+    od = strain_data['OD600']
+
+    # Plot growth curve
+    plt.figure()
+    plt.plot(time, od, label=f"{strain} ({get_type(strain)})")
+    plt.xlabel("Time")
+    plt.ylabel("OD600")
+    plt.title(f"Growth Curve: {strain}")
+    plt.grid(True)
+    plt.legend()
+    plt.show()
+
+    # Calculate time to 80% of max OD600
+    time80 = time_to_80_percent(od, time)
+    results.append({'Strain': strain, 'Type': get_type(strain), 'Time_to_80': time80})
+
+# Create results DataFrame
+results_df = pd.DataFrame(results)
+print("\nTime to reach 80% of max OD600:\n")
+print(results_df)
+
+# Scatter plot of time to carrying capacity
+sns.scatterplot(data=results_df, x='Strain', y='Time_to_80', hue='Type')
+plt.title("Scatter Plot: Time to 80% Max OD600")
+plt.xticks(rotation=45)
+plt.grid(True)
+plt.show()
+
+# Box plot of time to carrying capacity
+sns.boxplot(data=results_df, x='Type', y='Time_to_80')
+plt.title("Boxplot: Time to 80% Max OD600")
+plt.grid(True)
+plt.show()
+
+# Perform t-test to compare + and - strains
+plus = results_df[results_df['Type'] == '+']['Time_to_80'].dropna()
+minus = results_df[results_df['Type'] == '-']['Time_to_80'].dropna()
+
+t_stat, p_val = ttest_ind(plus, minus)
+
+print(f"\nT-test Result:\nT-statistic = {t_stat:.2f}, P-value = {p_val:.4f}")
+
+if p_val < 0.05:
+    print("✅ There is a significant difference between knock-in and knock-out strains.")
+else:
+    print("⚠ There is no significant difference between knock-in and knock-out strains.")
