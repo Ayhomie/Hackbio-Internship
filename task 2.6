@@ -1,0 +1,94 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+from scipy import stats
+
+# Step 1: Load the dataset
+url = 'https://raw.githubusercontent.com/HackBio-Internship/2025_project_collection/refs/heads/main/Python/Dataset/Pesticide_treatment_data.txt'
+df = pd.read_csv(url, sep='\t')  # Assuming tab-delimited file
+
+# Inspect the columns and first few rows of the dataset
+print("Columns in the dataset:", df.columns)
+print("\nFirst 5 rows of the dataset:\n", df.head())
+
+# Step 2: Group the data based on experimental conditions (Control vs Treatment)
+# We will assume that rows containing 'DMSO' are control and those with 'pesticide' are treatment
+
+control_rows = df[df['Unnamed: 0'].str.contains('DMSO')]
+treatment_rows = df[df['Unnamed: 0'].str.contains('pesticide')]
+
+# Step 3: Calculate Log2 Fold Change (Log2FC) and p-values for each metabolite
+metabolites = df.columns[1:]  # Skip the first column (sample identifiers)
+
+# Initialize dictionaries to store Log2FC and p-values
+log2fc = {}
+pvalues = {}
+
+# For each metabolite, calculate Log2FC and p-value (using t-test)
+for metabolite in metabolites:
+    control_values = control_rows[metabolite]  # Control values (DMSO)
+    treatment_values = treatment_rows[metabolite]  # Treatment values (Pesticide)
+
+    # Calculate Log2 Fold Change
+    log2fc[metabolite] = np.log2(treatment_values.mean() / control_values.mean())
+    
+    # Perform t-test to calculate p-value
+    _, pvalue = stats.ttest_ind(control_values, treatment_values)
+    pvalues[metabolite] = pvalue
+
+# Convert to DataFrame for volcano plot
+volcano_df = pd.DataFrame({
+    'Metabolite': metabolites,
+    'Log2FC': log2fc.values(),
+    'pvalue': pvalues.values()
+})
+
+# Step 4: Generate Volcano Plot
+# Calculate -log10(p-value)
+volcano_df['-log10(pvalue)'] = -np.log10(volcano_df['pvalue'])
+
+# Set thresholds for significance
+log2fc_threshold = 1
+pval_threshold = 0.01
+
+# Categorize metabolites based on thresholds
+volcano_df['regulation'] = 'Not Significant'
+volcano_df.loc[(volcano_df['Log2FC'] > log2fc_threshold) & (volcano_df['pvalue'] < pval_threshold), 'regulation'] = 'Upregulated'
+volcano_df.loc[(volcano_df['Log2FC'] < -log2fc_threshold) & (volcano_df['pvalue'] < pval_threshold), 'regulation'] = 'Downregulated'
+
+# Plot the volcano plot
+plt.figure(figsize=(10, 6))
+sns.scatterplot(data=volcano_df, x='Log2FC', y='-log10(pvalue)', hue='regulation',
+                palette={'Upregulated': 'red', 'Downregulated': 'blue', 'Not Significant': 'grey'}, alpha=0.7)
+plt.axvline(x=1, color='black', linestyle='--')
+plt.axvline(x=-1, color='black', linestyle='--')
+plt.axhline(y=-np.log10(pval_threshold), color='black', linestyle='--')
+plt.title('Volcano Plot')
+plt.xlabel('Log2 Fold Change')
+plt.ylabel('-log10(p-value)')
+plt.legend()
+plt.tight_layout()
+plt.show()
+
+# Step 5: Get upregulated and downregulated metabolites
+upregulated = volcano_df[(volcano_df['Log2FC'] > log2fc_threshold) & (volcano_df['pvalue'] < pval_threshold)].sort_values(by='Log2FC', ascending=False)
+downregulated = volcano_df[(volcano_df['Log2FC'] < -log2fc_threshold) & (volcano_df['pvalue'] < pval_threshold)].sort_values(by='Log2FC')
+
+# Display top 5 upregulated and downregulated metabolites
+print("Top 5 Upregulated Metabolites:")
+print(upregulated[['Metabolite', 'Log2FC', 'pvalue']].head(5))
+
+print("\nTop 5 Downregulated Metabolites:")
+print(downregulated[['Metabolite', 'Log2FC', 'pvalue']].head(5))
+
+# Step 6: Provide compound function lookup links (manually open)
+print("\nSearch these metabolites on https://www.genecards.org to find their functions:")
+
+print("\n🟥 Upregulated:")
+for metabolite in upregulated['Metabolite'].head(5):
+    print(f"https://www.genecards.org/cgi-bin/carddisp.pl?gene={metabolite}")
+
+print("\n🟦 Downregulated:")
+for metabolite in downregulated['Metabolite'].head(5):
+    print(f"https://www.genecards.org/cgi-bin/carddisp.pl?gene={metabolite}")
